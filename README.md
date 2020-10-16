@@ -1,0 +1,2 @@
+# declarations
+Bigus declarations analizer
