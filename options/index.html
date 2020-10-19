@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Options</title>
+	<link rel="stylesheet" href="../styles/css/options.css"/>
+	<link rel="stylesheet" href="../styles/style.css"/>
+</head>
+<body>
+
+<h2>Декларації</h2>
+
+<table id="declarations-stats" class="declarations">
+	<thead>
+	<tr>
+		<th colspan="3">&nbsp;</th>
+		<th colspan="3">Обʼєкти нерухомості</th>
+		<th>&nbsp;</th>
+		<th colspan="3">Транспортні засоби</th>
+	</tr>
+	<tr>
+		<th>
+			<span>Імʼя</span>
+		</th>
+		<th>
+			<span>Рік</span>
+		</th>
+		<th>Тип</th>
+
+		<th>Загальна площа (м<sup>2</sup>)</th>
+		<th>Загальна вартість<br>на дату набуття</th>
+		<th>Загальна вартість<br>за останньою оцінкою</th>
+
+		<th>Площа незавершеного<br>будівництва (м<sup>2</sup>)</th>
+
+		<th>Кількість</th>
+		<th>Вказана ціна</th>
+		<th>Поточна ціна</th>
+
+		<th>
+			<button data-remove-all class="btn" title="Видалити все" type="button"><i class="i-trash-o"></i></button>
+		</th>
+	</tr>
+	</thead>
+	<tbody data-list>
+	<tr>
+		<td class="nowrap">
+			<a data-name href="#" target="_blank"></a>
+		</td>
+		<td data-year></td>
+		<td data-type></td>
+
+		<td>
+			<div class="fixed-height">
+				<button data-area-toggle class="btn" type="button"><i class="i-chevron-down"></i></button>
+				<div>
+					&nbsp;
+					<span data-total-area></span>
+				</div>
+			</div>
+
+			<div data-area-list data-area-list-open class="inner-list">
+				<div class="nowrap"></div>
+			</div>
+		</td>
+		<td>
+			<div data-total-price-first class="fixed-height"></div>
+
+			<div data-area-price-first-list data-area-list-open class="inner-list">
+				<div class="nowrap"></div>
+			</div>
+		</td>
+		<td>
+			<div data-total-price-last class="fixed-height"></div>
+
+			<div data-area-price-last-list data-area-list-open class="inner-list">
+				<div class="nowrap"></div>
+			</div>
+		</td>
+
+		<td data-total-not-finish-area></td>
+
+		<td>
+			<div class="fixed-height">
+				<button data-auto-toggle class="btn" type="button"><i class="i-chevron-down"></i></button>
+				<div>
+					&nbsp;
+					<span data-auto-count></span>
+					<span data-auto-unknown-block>
+						<i class="i-warning"></i>
+						<span data-auto-unknown-count></span>
+					</span>
+				</div>
+			</div>
+
+			<div data-auto-name-list data-auto-list-open class="inner-list">
+				<div class="nowrap"></div>
+			</div>
+		</td>
+		<td>
+			<div data-auto-total-price class="fixed-height"></div>
+
+			<div data-auto-price-list data-auto-list-open class="inner-list">
+				<div></div>
+			</div>
+		</td>
+		<td>
+			<div data-auto-total-current-price class="fixed-height"></div>
+
+			<div data-auto-current-price-list data-auto-list-open class="inner-list">
+				<div class="nowrap"></div>
+			</div>
+		</td>
+
+		<td>
+			<button data-remove class="btn" title="Видалити" type="button"><i class="i-trash-o"></i></button>
+		</td>
+	</tr>
+	</tbody>
+</table>
+
+<div id="unknown-auto">
+	<h2>Нероспізнані транспортні засоби</h2>
+
+	<table>
+		<thead>
+		<tr>
+			<th>Назва</th>
+			<th>Марка</th>
+			<th>Модель</th>
+			<th>&nbsp;</th>
+		</tr>
+		</thead>
+		<tbody data-list>
+		<tr>
+			<td data-name></td>
+			<td>
+				<select data-brand>
+					<option value=""></option>
+					<option></option>
+				</select>
+			</td>
+			<td>
+				<select data-model>
+					<option value=""></option>
+					<option></option>
+				</select>
+			</td>
+			<td>
+				<button data-apply type="button">Застосувати</button>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<script src="../lib/define-module-name.min.js"></script>
+<script src="../lib/define-names.js"></script>
+<script src="../lib/jquery-3.5.1.min.js"></script>
+<script src="../lib/underscore-min.js"></script>
+<script src="../lib/backbone-min.js"></script>
+<script src="../lib/backbone-dom-view.min.js"></script>
+<script src="../lib/jquery.number.min.js"></script>
+<script src="../lib/sendMessage.js"></script>
+<script src="../lib/sortDeclarations.js"></script>
+<script src="../lib/round.js"></script>
+<script src="../lib/auto.js"></script>
+<script src="../popup/views/declarations.js"></script>
+<script src="../models/declarations.js"></script>
+<script src="../models/unknown-auto.js"></script>
+<script src="views/declarations-stats.js"></script>
+<script src="views/unknown-auto.js"></script>
+<script src="index.js"></script>
+</body>
+</html>
