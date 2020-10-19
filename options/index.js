@@ -71,6 +71,15 @@ require([
 			});
 	};
 
+	document.addEventListener('copy', function (e) {
+		if (!e.clipboardData) return;
+
+		e.preventDefault();
+
+		var text = String(document.getSelection());
+		e.clipboardData.setData('text', text.replace(/\u202F/g, ''));
+	});
+
 	Promise
 		.all([
 			sendMessage('get-declarations'),

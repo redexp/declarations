@@ -9,6 +9,12 @@ define('views/declarations-stats', [
 	View,
 	BB
 ) {
+	const AREA_ORDER = {
+		'house': 1,
+		'land': 2,
+		'not-finished': 3,
+	};
+
 	function DeclarationsStats() {
 		Declarations.apply(this, arguments);
 	}
@@ -47,7 +53,9 @@ define('views/declarations-stats', [
 				item.type = 'not-finished';
 				return item;
 			})
-		));
+		).sort(function (a, b) {
+			return AREA_ORDER[a.type] - AREA_ORDER[b.type];
+		}));
 	}
 
 	Declarations.Declaration.extend({
