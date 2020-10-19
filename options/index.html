@@ -3,20 +3,20 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Options</title>
+	<link rel="stylesheet" href="../styles/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="../styles/css/options.css"/>
 	<link rel="stylesheet" href="../styles/style.css"/>
 </head>
-<body>
+<body class="p-3">
 
 <h2>Декларації</h2>
 
-<table id="declarations-stats" class="declarations">
+<table id="declarations-stats" class="declarations table">
 	<thead>
 	<tr>
 		<th colspan="3">&nbsp;</th>
-		<th colspan="3">Обʼєкти нерухомості</th>
-		<th>&nbsp;</th>
-		<th colspan="3">Транспортні засоби</th>
+		<th colspan="4" class="text-center">Обʼєкти нерухомості</th>
+		<th colspan="3" class="text-center">Транспортні засоби</th>
 	</tr>
 	<tr>
 		<th>
@@ -28,17 +28,15 @@
 		<th>Тип</th>
 
 		<th>Загальна площа (м<sup>2</sup>)</th>
-		<th>Загальна вартість<br>на дату набуття</th>
-		<th>Загальна вартість<br>за останньою оцінкою</th>
-
-		<th>Площа незавершеного<br>будівництва (м<sup>2</sup>)</th>
+		<th>Вартість на дату набуття <br> або за останньою оцінкою</th>
+		<th>Тип нерухомості</th>
 
 		<th>Кількість</th>
 		<th>Вказана ціна</th>
 		<th>Поточна ціна</th>
 
 		<th>
-			<button data-remove-all class="btn" title="Видалити все" type="button"><i class="i-trash-o"></i></button>
+			<button data-remove-all class="btn btn-icon" title="Видалити все" type="button"><i class="i-trash-o"></i></button>
 		</th>
 	</tr>
 	</thead>
@@ -52,11 +50,8 @@
 
 		<td>
 			<div class="fixed-height">
-				<button data-area-toggle class="btn" type="button"><i class="i-chevron-down"></i></button>
-				<div>
-					&nbsp;
-					<span data-total-area></span>
-				</div>
+				<button data-area-toggle class="btn btn-icon" type="button"><i class="i-chevron-down"></i></button>
+				<span data-total-area></span>
 			</div>
 
 			<div data-area-list data-area-list-open class="inner-list">
@@ -64,33 +59,34 @@
 			</div>
 		</td>
 		<td>
-			<div data-total-price-first class="fixed-height"></div>
+			<div class="fixed-height">
+				<span data-total-price></span>
+				<span data-area-unknown-price-block title="Кількість з невказаною ціною">
+					<i class="i-warning"></i>
+					<span data-area-unknown-price></span>
+				</span>
+			</div>
 
-			<div data-area-price-first-list data-area-list-open class="inner-list">
+			<div data-area-price-list data-area-list-open class="inner-list">
 				<div class="nowrap"></div>
 			</div>
 		</td>
 		<td>
-			<div data-total-price-last class="fixed-height"></div>
+			<div data-area-total-type class="fixed-height"></div>
 
-			<div data-area-price-last-list data-area-list-open class="inner-list">
+			<div data-area-type-list data-area-list-open class="inner-list">
 				<div class="nowrap"></div>
 			</div>
 		</td>
-
-		<td data-total-not-finish-area></td>
 
 		<td>
 			<div class="fixed-height">
-				<button data-auto-toggle class="btn" type="button"><i class="i-chevron-down"></i></button>
-				<div>
-					&nbsp;
-					<span data-auto-count></span>
-					<span data-auto-unknown-block>
-						<i class="i-warning"></i>
-						<span data-auto-unknown-count></span>
-					</span>
-				</div>
+				<button data-auto-toggle class="btn btn-icon" type="button"><i class="i-chevron-down"></i></button>
+				<span data-auto-count></span>
+				<span data-auto-unknown-block title="Кількість нерозпізнаних">
+					<i class="i-warning"></i>
+					<span data-auto-unknown-count></span>
+				</span>
 			</div>
 
 			<div data-auto-name-list data-auto-list-open class="inner-list">
@@ -113,7 +109,7 @@
 		</td>
 
 		<td>
-			<button data-remove class="btn" title="Видалити" type="button"><i class="i-trash-o"></i></button>
+			<button data-remove class="btn btn-icon" title="Видалити" type="button"><i class="i-trash-o"></i></button>
 		</td>
 	</tr>
 	</tbody>
@@ -135,19 +131,19 @@
 		<tr>
 			<td data-name></td>
 			<td>
-				<select data-brand>
+				<select data-brand class="form-control">
 					<option value=""></option>
 					<option></option>
 				</select>
 			</td>
 			<td>
-				<select data-model>
+				<select data-model class="form-control">
 					<option value=""></option>
 					<option></option>
 				</select>
 			</td>
 			<td>
-				<button data-apply type="button">Застосувати</button>
+				<button data-apply type="button" class="btn btn-sm btn-secondary">Застосувати</button>
 			</td>
 		</tr>
 		</tbody>

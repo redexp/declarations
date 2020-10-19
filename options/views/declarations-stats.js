@@ -28,13 +28,26 @@ define('views/declarations-stats', [
 	function DeclarationStat() {
 		Declarations.Declaration.apply(this, arguments);
 
-		var area_list = this.model.get('data').step_3;
-
-		this.get('area_list').reset(area_list ? Object.values(area_list) : []);
+		this.listenTo(this.get('area_list'), 'add remove reset', function () {
+			this.trigger('area_list_change');
+		});
 
 		this.listenTo(this.model.get('auto_list'), 'add remove reset', function () {
 			this.trigger('auto_list_change');
 		});
+
+		var data = this.model.get('data');
+
+		this.get('area_list').reset([].concat(
+			Object.values(data.step_3 || {}).map(function (item) {
+				item.type = item.objectType === 'Земельна ділянка' ? 'land' : 'house';
+				return item;
+			}),
+			Object.values(data.step_4 || {}).map(function (item) {
+				item.type = 'not-finished';
+				return item;
+			})
+		));
 	}
 
 	Declarations.Declaration.extend({
@@ -73,8 +86,12 @@ define('views/declarations-stats', [
 			},
 
 			'[data-total-area]': {
-				text: function () {
-					return round(getTotal(this.model.get('data').step_3, 'totalArea'));
+				text: {
+					'> #area_list_change': function () {
+						return round(this.get('area_list').reduce(function (sum, item) {
+							return sum + (item.get('totalArea') || 0);
+						}, 0));
+					}
 				}
 			},
 			'[data-area-list]': {
@@ -85,28 +102,87 @@ define('views/declarations-stats', [
 				}
 			},
 
-			'[data-total-price-first]': {
-				text: function () {
-					return round(getTotal(this.model.get('data').step_3, 'costAssessment', 'cost_date_assessment'));
+			'[data-total-price]': {
+				text: {
+					'> #area_list_change': function () {
+						return round(
+							this.get('area_list').reduce(function (sum, item) {
+								var val = (
+									Number(item.get('cost_date_assessment')) ||
+									Number(item.get('costDate')) ||
+									Number(item.get('costAssessment')) ||
+									0
+								);
+
+								return sum + val;
+							}, 0)
+						);
+					}
 				}
 			},
-			'[data-area-price-first-list]': {
+			'[data-area-price-list]': {
 				each: {
 					field: 'area_list',
-					view: AreaPriceFirst,
+					view: AreaPrice,
 					el: '> *'
 				}
 			},
 
-			'[data-total-price-last]': {
-				text: function () {
-					return round(getTotal(this.model.get('data').step_3, 'costDate', 'cost_date_assessment'));
+			'[data-area-unknown-price-block]': {
+				visible: {
+					'> #area_list_change': function () {
+						return this.get('area_list').some(function (item) {
+							return !(
+								Number(item.get('cost_date_assessment')) ||
+								Number(item.get('costDate')) ||
+								Number(item.get('costAssessment')) ||
+								0
+							);
+						});
+					}
+				},
+
+				template: {
+					'[data-area-unknown-price]': {
+						text: {
+							'> #area_list_change': function () {
+								return this.get('area_list').reduce(function (sum, item) {
+									var val = (
+										Number(item.get('cost_date_assessment')) ||
+										Number(item.get('costDate')) ||
+										Number(item.get('costAssessment')) ||
+										0
+									);
+
+									return sum + (val === 0 ? 1 : 0);
+								}, 0);
+							}
+						}
+					}
 				}
 			},
-			'[data-area-price-last-list]': {
+
+			'[data-area-total-type]': {
+				text: {
+					'> #area_list_change': function () {
+						return this.get('area_list')
+							.reduce(function (list, item) {
+								var type = getType(item.get('type'));
+
+								if (!list.includes(type)) {
+									list.push(type);
+								}
+
+								return list;
+							}, [])
+							.join(', ');
+					}
+				}
+			},
+			'[data-area-type-list]': {
 				each: {
 					field: 'area_list',
-					view: AreaPriceLast,
+					view: AreaType,
 					el: '> *'
 				}
 			},
@@ -215,17 +291,24 @@ define('views/declarations-stats', [
 		}
 	});
 
-	function AreaPriceFirst() {
+	function AreaPrice() {
 		View.apply(this, arguments);
 	}
 
 	View.extend({
-		constructor: AreaPriceFirst,
+		constructor: AreaPrice,
 
 		template: {
 			'root': {
 				text: function () {
-					return round(this.model.get('costAssessment') || Number(this.model.get('cost_date_assessment')) || 0);
+					var item = this.model;
+
+					return round(
+						Number(item.get('cost_date_assessment')) ||
+						Number(item.get('costDate')) ||
+						Number(item.get('costAssessment')) ||
+						0
+					);
 				}
 			}
 		}
@@ -303,6 +386,28 @@ define('views/declarations-stats', [
 		}
 	});
 
+	function AreaType() {
+		View.apply(this, arguments);
+	}
+
+	View.extend({
+		constructor: AreaType,
+
+		template: {
+			'root': {
+				text: function () {
+					return getType(this.model.get('type'));
+				}
+			}
+		}
+	});
+
+	function getList(data, prop) {
+		return Object.values(data[prop] || {}).map(function (item) {
+			item.parent = prop;
+			return item;
+		});
+	}
 
 	function getTotal(list, prop, prop2) {
 		if (!list) return 0;
@@ -314,6 +419,18 @@ define('views/declarations-stats', [
 		return list.reduce(function (sum, item) {
 			return sum + (item[prop] || (prop2 && Number(item[prop2])) || 0);
 		}, 0);
+	}
+
+	function getType(type) {
+		return (
+			type === 'not-finished' ?
+				'Незавершене будівництво'
+				:
+				type === 'land' ?
+					'Земельна ділянка'
+					:
+					'Нерухомість'
+		);
 	}
 
 	return DeclarationsStats;
