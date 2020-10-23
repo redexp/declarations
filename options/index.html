@@ -54,7 +54,7 @@
 				<span data-total-area></span>
 			</div>
 
-			<div data-area-list data-area-list-open class="inner-list">
+			<div data-area-size-list data-area-list-open class="inner-list">
 				<div class="nowrap"></div>
 			</div>
 		</td>
@@ -83,10 +83,6 @@
 			<div class="fixed-height">
 				<button data-auto-toggle class="btn btn-icon" type="button"><i class="i-chevron-down"></i></button>
 				<span data-auto-count></span>
-				<span data-auto-unknown-block title="Кількість нерозпізнаних">
-					<i class="i-warning"></i>
-					<span data-auto-unknown-count></span>
-				</span>
 			</div>
 
 			<div data-auto-name-list data-auto-list-open class="inner-list">
@@ -94,14 +90,26 @@
 			</div>
 		</td>
 		<td>
-			<div data-auto-total-price class="fixed-height"></div>
+			<div class="fixed-height">
+				<span data-auto-total-price></span>
+				<span data-auto-zero-price-block title="Кількість не вказаних цін">
+					<i class="i-warning"></i>
+					<span data-auto-zero-price-count></span>
+				</span>
+			</div>
 
 			<div data-auto-price-list data-auto-list-open class="inner-list">
 				<div></div>
 			</div>
 		</td>
 		<td>
-			<div data-auto-total-current-price class="fixed-height"></div>
+			<div class="fixed-height">
+				<span data-auto-total-current-price></span>
+				<span data-auto-unknown-block title="Кількість нерозпізнаних">
+					<i class="i-warning"></i>
+					<span data-auto-unknown-count></span>
+				</span>
+			</div>
 
 			<div data-auto-current-price-list data-auto-list-open class="inner-list">
 				<div class="nowrap"></div>

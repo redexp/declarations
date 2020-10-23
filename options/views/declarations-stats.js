@@ -2,7 +2,7 @@ define('views/declarations-stats', [
 	'views/declarations',
 	'round',
 	'view',
-	'backbone',
+	'backbone'
 ], function (
 	Declarations,
 	round,
@@ -61,6 +61,18 @@ define('views/declarations-stats', [
 	Declarations.Declaration.extend({
 		constructor: DeclarationStat,
 
+		ui: {
+			areaRoot: 'root',
+			areaSize: '[data-area-size-list]',
+			areaPrice: '[data-area-price-list]',
+			areaType: '[data-area-type-list]',
+
+			autoRoot: 'root',
+			autoName: '[data-auto-name-list]',
+			autoPrice: '[data-auto-price-list]',
+			autoCurrentPrice: '[data-auto-current-price-list]',
+		},
+
 		defaults: function () {
 			return {
 				area_open: false,
@@ -102,11 +114,30 @@ define('views/declarations-stats', [
 					}
 				}
 			},
-			'[data-area-list]': {
+
+			'areaRoot': {
 				each: {
 					field: 'area_list',
-					view: AreaSize,
-					el: '> *'
+					el: '[data-area-size-list] > *, [data-area-price-list] > *, [data-area-type-list] > *',
+					view: Area,
+					addHandler: function (root, view) {
+						this.ui.areaSize.append(view.ui.size);
+						this.ui.areaPrice.append(view.ui.price);
+						this.ui.areaType.append(view.ui.type);
+					}
+				}
+			},
+
+			'autoRoot': {
+				each: {
+					field: 'auto_list',
+					el: '[data-auto-name-list] > *, [data-auto-price-list] > *, [data-auto-current-price-list] > *',
+					view: Auto,
+					addHandler: function (root, view) {
+						this.ui.autoName.append(view.ui.name);
+						this.ui.autoPrice.append(view.ui.price);
+						this.ui.autoCurrentPrice.append(view.ui.currentPrice);
+					}
 				}
 			},
 
@@ -126,13 +157,6 @@ define('views/declarations-stats', [
 							}, 0)
 						);
 					}
-				}
-			},
-			'[data-area-price-list]': {
-				each: {
-					field: 'area_list',
-					view: AreaPrice,
-					el: '> *'
 				}
 			},
 
@@ -187,13 +211,6 @@ define('views/declarations-stats', [
 					}
 				}
 			},
-			'[data-area-type-list]': {
-				each: {
-					field: 'area_list',
-					view: AreaType,
-					el: '> *'
-				}
-			},
 
 			'[data-total-not-finish-area]': {
 				text: function () {
@@ -225,20 +242,36 @@ define('views/declarations-stats', [
 				}
 			},
 
+			'[data-auto-zero-price-block]': {
+				visible: {
+					'> #auto_list_change': function () {
+						return this.model.get('auto_list').filter(item => !item.get('costDate')).length > 0;
+					}
+				},
+
+				'& [data-auto-zero-price-count]': {
+					text: {
+						'> #auto_list_change': function () {
+							return this.model.get('auto_list').filter(item => !item.get('costDate')).length;
+						}
+					}
+				},
+			},
+
 			'[data-auto-unknown-block]': {
 				visible: {
 					'> #auto_list_change': function () {
 						return this.model.get('auto_list').where({unknown: true}).length > 0;
 					}
-				}
-			},
+				},
 
-			'[data-auto-unknown-count]': {
-				text: {
-					'> #auto_list_change': function () {
-						return this.model.get('auto_list').where({unknown: true}).length;
+				'& [data-auto-unknown-count]': {
+					text: {
+						'> #auto_list_change': function () {
+							return this.model.get('auto_list').where({unknown: true}).length;
+						}
 					}
-				}
+				},
 			},
 			
 			'[data-auto-toggle]': {
@@ -257,57 +290,31 @@ define('views/declarations-stats', [
 			'[data-auto-list-closed]': {
 				visible: '!@auto_open'
 			},
-
-			'[data-auto-name-list]': {
-				each: {
-					field: 'auto_list',
-					view: AutoName,
-					el: '> *'
-				}
-			},
-			'[data-auto-price-list]': {
-				each: {
-					field: 'auto_list',
-					view: AutoPrice,
-					el: '> *'
-				}
-			},
-			'[data-auto-current-price-list]': {
-				each: {
-					field: 'auto_list',
-					view: AutoCurrentPrice,
-					el: '> *'
-				}
-			},
-			
 		}
 	});
 
-
-
-	function AreaSize() {
+	function Area() {
 		View.apply(this, arguments);
 	}
 
 	View.extend({
-		constructor: AreaSize,
+		constructor: Area,
+
+		setElement: function () {
+			View.prototype.setElement.apply(this, arguments);
+
+			this.ui.size = this.$el.eq(0);
+			this.ui.price = this.$el.eq(1);
+			this.ui.type = this.$el.eq(2);
+
+			return this;
+		},
 
 		template: {
-			'root': {
+			'size': {
 				text: '=totalArea'
-			}
-		}
-	});
-
-	function AreaPrice() {
-		View.apply(this, arguments);
-	}
-
-	View.extend({
-		constructor: AreaPrice,
-
-		template: {
-			'root': {
+			},
+			'price': {
 				text: function () {
 					var item = this.model;
 
@@ -318,67 +325,46 @@ define('views/declarations-stats', [
 						0
 					);
 				}
-			}
-		}
-	});
-
-	function AreaPriceLast() {
-		View.apply(this, arguments);
-	}
-
-	View.extend({
-		constructor: AreaPriceLast,
-
-		template: {
-			'root': {
+			},
+			'type': {
 				text: function () {
-					return round(this.model.get('costDate') || Number(this.model.get('cost_date_assessment')) || 0);
+					return getType(this.model.get('type'));
 				}
 			}
 		}
 	});
 
-	function AutoName() {
+	function Auto() {
 		View.apply(this, arguments);
 	}
 
 	View.extend({
-		constructor: AutoName,
+		constructor: Auto,
+
+		setElement: function () {
+			View.prototype.setElement.apply(this, arguments);
+
+			this.ui.name = this.$el.eq(0);
+			this.ui.price = this.$el.eq(1);
+			this.ui.currentPrice = this.$el.eq(2);
+
+			return this;
+		},
 
 		template: {
-			'root': {
+			'name': {
 				text: function () {
 					var auto = this.model.attributes;
 
 					return `${auto.brand} ${auto.model}`;
 				}
-			}
-		}
-	});
-
-	function AutoPrice() {
-		View.apply(this, arguments);
-	}
-
-	View.extend({
-		constructor: AutoPrice,
-
-		template: {
-			'root': {
-				text: '=costDate'
-			}
-		}
-	});
-
-	function AutoCurrentPrice() {
-		View.apply(this, arguments);
-	}
-
-	View.extend({
-		constructor: AutoCurrentPrice,
-
-		template: {
-			'root': {
+			},
+			'price': {
+				text: function () {
+					return round(this.model.get('costDate'));
+				}
+			},
+			'currentPrice': {
 				text: function () {
 					return (
 						this.model.get('unknown_type') ?
@@ -393,29 +379,6 @@ define('views/declarations-stats', [
 			}
 		}
 	});
-
-	function AreaType() {
-		View.apply(this, arguments);
-	}
-
-	View.extend({
-		constructor: AreaType,
-
-		template: {
-			'root': {
-				text: function () {
-					return getType(this.model.get('type'));
-				}
-			}
-		}
-	});
-
-	function getList(data, prop) {
-		return Object.values(data[prop] || {}).map(function (item) {
-			item.parent = prop;
-			return item;
-		});
-	}
 
 	function getTotal(list, prop, prop2) {
 		if (!list) return 0;
