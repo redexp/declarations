@@ -2,7 +2,8 @@ define('views/declarations-stats', [
 	'views/declarations',
 	'round',
 	'view',
-	'backbone'
+	'backbone',
+	'bootstrap'
 ], function (
 	Declarations,
 	round,
@@ -34,6 +35,8 @@ define('views/declarations-stats', [
 	function DeclarationStat() {
 		Declarations.Declaration.apply(this, arguments);
 
+		this.find('[title]').tooltip();
+
 		this.listenTo(this.get('area_list'), 'add remove reset', function () {
 			this.trigger('area_list_change');
 		});
@@ -56,6 +59,8 @@ define('views/declarations-stats', [
 		).sort(function (a, b) {
 			return AREA_ORDER[a.type] - AREA_ORDER[b.type];
 		}));
+
+		this.get('income_list').reset(Object.values(data.step_11 || {}));
 	}
 
 	Declarations.Declaration.extend({
@@ -71,13 +76,19 @@ define('views/declarations-stats', [
 			autoName: '[data-auto-name-list]',
 			autoPrice: '[data-auto-price-list]',
 			autoCurrentPrice: '[data-auto-current-price-list]',
+
+			incomeRoot: 'root',
+			incomeName: '[data-income-name-list]',
+			incomePrice: '[data-income-price-list]',
 		},
 
 		defaults: function () {
 			return {
 				area_open: false,
 				auto_open: false,
+				income_open: false,
 				area_list: new BB.Collection(),
+				income_list: new BB.Collection(),
 			};
 		},
 		
@@ -87,6 +98,10 @@ define('views/declarations-stats', [
 
 		toggleAuto: function () {
 			this.set('auto_open', !this.get('auto_open'));
+		},
+
+		toggleIncome: function () {
+			this.set('income_open', !this.get('income_open'));
 		},
 
 		template: {
@@ -137,6 +152,18 @@ define('views/declarations-stats', [
 						this.ui.autoName.append(view.ui.name);
 						this.ui.autoPrice.append(view.ui.price);
 						this.ui.autoCurrentPrice.append(view.ui.currentPrice);
+					}
+				}
+			},
+
+			'incomeRoot': {
+				each: {
+					field: 'income_list',
+					el: '[data-income-name-list] > *, [data-income-price-list] > *',
+					view: Income,
+					addHandler: function (root, view) {
+						this.ui.incomeName.append(view.ui.name);
+						this.ui.incomePrice.append(view.ui.price);
 					}
 				}
 			},
@@ -220,9 +247,7 @@ define('views/declarations-stats', [
 
 			'[data-auto-count]': {
 				text: function () {
-					var list = this.model.get('data').step_6;
-
-					return list ? Object.values(list).length : 0;
+					return countStep(this.model, 'step_6');
 				}
 			},
 			'[data-auto-total-price]': {
@@ -287,14 +312,52 @@ define('views/declarations-stats', [
 			'[data-auto-list-open]': {
 				visible: '@auto_open'
 			},
-			'[data-auto-list-closed]': {
-				visible: '!@auto_open'
+
+			'[data-income-count]': {
+				text: function () {
+					return countStep(this.model, 'step_11');
+				}
+			},
+			'[data-income-total-price]': {
+				text: function () {
+					return round(getTotal(this.model.get('data').step_11, 'sizeIncome'));
+				}
+			},
+			'[data-income-zero-price-block]': {
+				visible: {
+					'> #income_list_change': function () {
+						return this.get('income_list').filter(item => !item.get('sizeIncome')).length > 0;
+					}
+				},
+
+				'& [data-income-zero-price-count]': {
+					text: {
+						'> #income_list_change': function () {
+							return this.get('income_list').filter(item => !item.get('sizeIncome')).length;
+						}
+					}
+				},
+			},
+			'[data-income-toggle]': {
+				click: 'toggleIncome',
+
+				'& i': {
+					toggleClass: {
+						'i-chevron-up': '@income_open',
+						'i-chevron-down': '!@income_open',
+					}
+				}
+			},
+			'[data-income-list-open]': {
+				visible: '@income_open'
 			},
 		}
 	});
 
 	function Area() {
 		View.apply(this, arguments);
+
+		this.ui.type.tooltip();
 	}
 
 	View.extend({
@@ -329,6 +392,11 @@ define('views/declarations-stats', [
 			'type': {
 				text: function () {
 					return getType(this.model.get('type'));
+				},
+				attr: {
+					'title': function () {
+						return this.model.get('ua_cityType') || null;
+					}
 				}
 			}
 		}
@@ -380,6 +448,64 @@ define('views/declarations-stats', [
 		}
 	});
 
+	function Income() {
+		View.apply(this, arguments);
+
+		this.ui.name.tooltip();
+		this.ui.price.tooltip();
+	}
+
+	View.extend({
+		constructor: Income,
+
+		setElement: function () {
+			View.prototype.setElement.apply(this, arguments);
+
+			this.ui.name = this.$el.eq(0);
+			this.ui.price = this.$el.eq(1);
+
+			return this;
+		},
+
+		template: {
+			'name': {
+				text: function () {
+					var person_id = this.model.get('person');
+					var step_1 = this.parent.model.get('data').step_1;
+					var step_2 = this.parent.model.get('data').step_2;
+					var person = person_id === '1' ? step_1 : person_id && step_2 && step_2[person_id];
+
+					return person && `${person.lastname} ${person.firstname} ${person.middlename}` || '';
+				},
+				attr: {
+					'title': function () {
+						var person_id = this.model.get('person');
+						var step_2 = this.parent.model.get('data').step_2;
+
+						if (person_id === '1') return null;
+
+						var person = person_id && step_2 && step_2[person_id];
+
+						return person && person.subjectRelation || null;
+					}
+				}
+			},
+			'price': {
+				text: function () {
+					return round(this.model.get('sizeIncome'));
+				},
+				attr: {
+					'title': function () {
+						var desc = this.model.get('otherObjectType');
+						desc = desc ? ': ' + desc : '';
+
+						return this.model.get('objectType') + desc;
+					}
+				}
+			}
+		}
+	});
+
 	function getTotal(list, prop, prop2) {
 		if (!list) return 0;
 
@@ -402,6 +528,12 @@ define('views/declarations-stats', [
 					:
 					'Нерухомість'
 		);
+	}
+
+	function countStep(model, name) {
+		var list = model.get('data')[name];
+
+		return list ? Object.values(list).length : 0;
 	}
 
 	return DeclarationsStats;
